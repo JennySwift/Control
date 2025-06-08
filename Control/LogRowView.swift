@@ -1,16 +1,20 @@
+
 import SwiftUI
 import CoreData
 
 struct LogRowView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
-    @ObservedObject var log: Log
-
+    let log: Log
     let isEditingLogs: Bool
 
     @State private var tempBG: String = ""
     @State private var tempNotes: String = ""
     @State private var tempStart: Date = Date()
+
+    @State private var isStartDirty = false
+    @State private var isBGDirty = false
+    @State private var isNotesDirty = false
 
     @FocusState.Binding var focusedField: ContentView.LogFieldFocus?
 
@@ -19,47 +23,51 @@ struct LogRowView: View {
 
         VStack(alignment: .leading, spacing: 4) {
             if isEditingLogs {
+                // START
                 DatePicker("Start", selection: $tempStart, displayedComponents: [.date, .hourAndMinute])
-                    .onChange(of: tempStart) { newValue in
-                        if newValue != (log.start ?? Date()) {
-                            log.start = newValue
-                            saveAndResync()
-                            tempStart = log.start ?? Date()
+                    .onChange(of: tempStart) {
+                        if tempStart != (log.start ?? Date()) {
+                            isStartDirty = true
+                            log.start = tempStart
+                            saveContext()
+                            delayClearDirtyFlag(flag: $isStartDirty)
                         }
                     }
                     .background(isStartDirty ? Color.yellow.opacity(0.3) : Color.clear)
                     .cornerRadius(6)
 
+                // BG
                 TextField("BG", text: $tempBG)
                     .focused($focusedField, equals: .bg(id))
-                    .onSubmit {
+                    .onChange(of: tempBG) {
                         if let decimal = Decimal(string: tempBG),
                            decimal != (log.bg?.decimalValue ?? Decimal.zero) {
+                            isBGDirty = true
                             log.bg = NSDecimalNumber(decimal: decimal)
-                            saveAndResync()
+                            saveContext()
                             tempBG = log.bg?.stringValue ?? ""
+                            delayClearDirtyFlag(flag: $isBGDirty)
                         }
-                        focusedField = .notes(id)
                     }
                     .modifier(PlatformKeyboardModifier())
                     .background(isBGDirty ? Color.yellow.opacity(0.3) : Color.clear)
                     .cornerRadius(6)
 
+                // NOTES
                 TextField("Notes", text: $tempNotes)
                     .focused($focusedField, equals: .notes(id))
-                    .onSubmit {
+                    .onChange(of: tempNotes) {
                         if tempNotes != (log.notes ?? "") {
+                            isNotesDirty = true
                             log.notes = tempNotes
-                            saveAndResync()
+                            saveContext()
                             tempNotes = log.notes ?? ""
-                        }
-
-                        if let nextLog = findNextLog() {
-                            focusedField = .bg(nextLog.objectID)
+                            delayClearDirtyFlag(flag: $isNotesDirty)
                         }
                     }
                     .background(isNotesDirty ? Color.yellow.opacity(0.3) : Color.clear)
                     .cornerRadius(6)
+
             } else {
                 Text("Start: \(log.start ?? Date(), formatter: dateFormatter)")
                 Text("BG: \(log.bg?.stringValue ?? "-")")
@@ -69,47 +77,24 @@ struct LogRowView: View {
         }
         .padding(.vertical, 6)
         .onAppear {
-            syncTempValues()
+            tempBG = log.bg?.stringValue ?? ""
+            tempNotes = log.notes ?? ""
+            tempStart = log.start ?? Date()
         }
     }
 
-    private func saveAndResync() {
+    private func delayClearDirtyFlag(flag: Binding<Bool>) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            flag.wrappedValue = false
+        }
+    }
+
+    private func saveContext() {
         do {
             try viewContext.save()
-            // Sync on next render pass
-            DispatchQueue.main.async {
-                syncTempValues()
-            }
         } catch {
             print("Save error: \(error)")
         }
-    }
-
-    private func syncTempValues() {
-        tempStart = log.start ?? Date()
-        tempBG = log.bg?.stringValue ?? ""
-        tempNotes = log.notes ?? ""
-    }
-
-    private var isStartDirty: Bool {
-        (log.start ?? Date()) != tempStart
-    }
-
-    private var isBGDirty: Bool {
-        guard let original = log.bg?.decimalValue,
-              let current = Decimal(string: tempBG) else { return false }
-        return original != current
-    }
-
-    private var isNotesDirty: Bool {
-        (log.notes ?? "") != tempNotes
-    }
-
-    private func findNextLog() -> Log? {
-        guard let logs = try? viewContext.fetch(Log.fetchRequest()) as? [Log],
-              let currentIndex = logs.firstIndex(of: log),
-              currentIndex + 1 < logs.count else { return nil }
-        return logs[currentIndex + 1]
     }
 
     private var dateFormatter: DateFormatter {
@@ -119,4 +104,3 @@ struct LogRowView: View {
         return f
     }
 }
-
