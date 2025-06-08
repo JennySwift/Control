@@ -29,6 +29,8 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             VStack {
+                SyncStatusView()
+
                 Toggle("Quick Edit Mode", isOn: $isEditingLogs)
                     .padding(.horizontal)
 
