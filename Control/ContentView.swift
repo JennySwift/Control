@@ -65,6 +65,8 @@ struct ContentView: View {
         .frame(minWidth: isMac ? 500 : nil, minHeight: isMac ? 600 : nil)
         .onAppear {
             fetchLogs()
+//            TidepoolController().fetchTidepoolBGData(email: "", password: "")
+
         }
     }
     
