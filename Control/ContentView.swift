@@ -9,7 +9,11 @@ struct ContentView: View {
 
     @State private var startDate: Date = Date()
     @State private var notes: String = "Sample notes"
+    @State private var bolus: Decimal = 0.0
+    @State private var netCarbs: Decimal = 0.0
     @State private var bgString: String = "5.6" // typical blood glucose value
+    @State private var bolusString: String = "0"
+    @State private var netCarbsString: String = "0"
     @State private var isEditingLogs: Bool = true
 
     enum LogFieldFocus: Hashable {
@@ -32,6 +36,10 @@ struct ContentView: View {
                     DatePicker("Start", selection: $startDate)
                     TextField("Notes", text: $notes)
                     TextField("BG (Decimal)", text: $bgString)
+                        .modifier(PlatformKeyboardModifier())
+                    TextField("Bolus)", text: $bolusString)
+                        .modifier(PlatformKeyboardModifier())
+                    TextField("Net Carbs", text: $netCarbsString)
                         .modifier(PlatformKeyboardModifier())
                     HStack {
                         Spacer()
@@ -90,12 +98,16 @@ struct ContentView: View {
 
     private func addLog() {
         guard let decimalBG = Decimal(string: bgString) else { return }
+        guard let decimalBolus = Decimal(string: bolusString) else { return }
+        guard let decimalNetCarbs = Decimal(string: netCarbsString) else { return }
 
         withAnimation {
             let newLog = Log(context: viewContext)
             newLog.start = startDate
             newLog.notes = notes
             newLog.bg = NSDecimalNumber(decimal: decimalBG)
+            newLog.bolus = NSDecimalNumber(decimal: decimalBolus)
+            newLog.netCarbs = NSDecimalNumber(decimal: decimalNetCarbs)
 
             do {
                 try viewContext.save()
@@ -106,6 +118,8 @@ struct ContentView: View {
 //                startDate = Date() // resets to "now" after every tap
                 notes = "Sample notes"
                 bgString = "5.6"
+                bolusString = "0"
+                netCarbsString = "0"
 
                 fetchLogs()
             } catch {
