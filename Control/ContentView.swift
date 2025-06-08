@@ -1,88 +1,142 @@
-//
-//  ContentView.swift
-//  Control
-//
-//  Created by Jenny Swift on 8/6/2025.
-//
-
 import SwiftUI
 import CoreData
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
+    @State private var logs: [Log] = []
+    @State private var fetchLimit = 20
+
+    @State private var startDate: Date = Date()
+    @State private var notes: String = "Sample notes"
+    @State private var bgString: String = "5.6" // typical blood glucose value
+    @State private var isEditingLogs: Bool = true
+
+    enum LogFieldFocus: Hashable {
+        case start(NSManagedObjectID), bg(NSManagedObjectID), notes(NSManagedObjectID)
+    }
+
+
+
+    @FocusState private var focusedField: LogFieldFocus?
+
+
 
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
+        NavigationStack {
+            VStack {
+                Toggle("Quick Edit Mode", isOn: $isEditingLogs)
+                    .padding(.horizontal)
+
+                Form {
+                    DatePicker("Start", selection: $startDate)
+                    TextField("Notes", text: $notes)
+                    TextField("BG (Decimal)", text: $bgString)
+                        .modifier(PlatformKeyboardModifier())
+                    HStack {
+                        Spacer()
+                        Button("Add Log", action: addLog)
+                            .disabled(!isValidBG)
                     }
                 }
-                .onDelete(perform: deleteItems)
+                .padding()
+                
+                LogListView(
+                    logs: logs,
+                    isEditingLogs: isEditingLogs,
+                    focusedField: $focusedField.projectedValue,
+                    onAppearLast: loadMoreIfNeeded
+                )
+
+
             }
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-            Text("Select an item")
+            .navigationTitle("BG Logs")
+        }
+        .frame(minWidth: isMac ? 500 : nil, minHeight: isMac ? 600 : nil)
+        .onAppear {
+            fetchLogs()
+        }
+    }
+    
+    private func saveContext() {
+        do {
+            try viewContext.save()
+        } catch {
+            print("Failed to save changes: \(error)")
         }
     }
 
-    private func addItem() {
+
+    private func loadMoreIfNeeded() {
+        fetchLimit += 20
+        fetchLogs()
+    }
+
+    private func fetchLogs() {
+        let request: NSFetchRequest<Log> = Log.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \Log.start, ascending: false)]
+        request.fetchLimit = fetchLimit
+
+        do {
+            logs = try viewContext.fetch(request)
+        } catch {
+            print("Failed to fetch logs: \(error)")
+        }
+    }
+
+    private var isValidBG: Bool {
+        Decimal(string: bgString) != nil
+    }
+
+    private func addLog() {
+        guard let decimalBG = Decimal(string: bgString) else { return }
+
         withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+            let newLog = Log(context: viewContext)
+            newLog.start = startDate
+            newLog.notes = notes
+            newLog.bg = NSDecimalNumber(decimal: decimalBG)
 
             do {
                 try viewContext.save()
+                
+                //This is for quick testing of my app so it's a new start for each log
+                startDate = startDate.addingTimeInterval(60) // +1 minute
+
+//                startDate = Date() // resets to "now" after every tap
+                notes = "Sample notes"
+                bgString = "5.6"
+
+                fetchLogs()
             } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                print("Save error: \(error)")
             }
         }
     }
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
+    private var dateFormatter: DateFormatter {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .short
+        return f
+    }
 
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
+    private var isMac: Bool {
+        #if os(macOS)
+        return true
+        #else
+        return false
+        #endif
     }
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
-#Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+struct PlatformKeyboardModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        #if os(iOS)
+        content.keyboardType(.decimalPad)
+        #else
+        content
+        #endif
+    }
 }
+
