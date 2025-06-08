@@ -3,7 +3,7 @@
     <entity name="Log" representedClassName="Log" syncable="YES" codeGenerationType="class">
         <attribute name="bg" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
         <attribute name="bolus" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
-        <attribute name="net_carbs" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="netCarbs" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
         <attribute name="notes" optional="YES" attributeType="String"/>
         <attribute name="start" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
     </entity>
