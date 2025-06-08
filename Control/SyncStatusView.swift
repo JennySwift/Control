@@ -35,6 +35,10 @@ struct SyncStatusView: View {
                 .buttonStyle(.bordered)
             }
         }
+        .onAppear{
+//            syncManager.printCloudKitEnvironment()
+            syncManager.testCloudKit()
+        }
         .padding(.horizontal)
         .padding(.top, 8)
     }

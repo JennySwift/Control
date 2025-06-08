@@ -47,6 +47,44 @@ final class SyncManager: ObservableObject {
             self.lastSyncDate = Date()
         }
     }
+    
+    public func testCloudKit () {
+        let record = CKRecord(recordType: "Log")
+        record["notes"] = "Testing from iPhone"
+        // Add other fields...
+
+        CKContainer.default().privateCloudDatabase.save(record) { savedRecord, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("❌ CloudKit save failed: \(error.localizedDescription)")
+                } else {
+                    print("✅ Log saved to CloudKit: \(savedRecord!)")
+                }
+            }
+        }
+
+    }
+    
+
+    public func printCloudKitEnvironment() {
+        let container = CKContainer.default()
+        container.accountStatus { status, error in
+            if let error = error {
+                print("iCloud error: \(error)")
+            } else {
+                switch status {
+                case .available: print("✅ iCloud available")
+                case .noAccount: print("❌ No iCloud account")
+                case .restricted: print("❌ iCloud restricted")
+                case .couldNotDetermine: print("❌ Could not determine iCloud status")
+                @unknown default: break
+                }
+            }
+            
+            print("Container ID: \(container.containerIdentifier ?? "nil")")
+        }
+    }
+
 
     
     private func startListening() {
