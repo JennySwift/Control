@@ -193,29 +193,28 @@ struct NewLogView: View {
               let decimalBolus = Decimal(string: bolusString),
               let decimalNetCarbs = Decimal(string: netCarbsString) else { return }
         
-        withAnimation {
-            let newLog = Log(context: viewContext)
-            newLog.start = startDate
-            newLog.notes = notes
-            newLog.bg = NSDecimalNumber(decimal: decimalBG)
-            newLog.bolus = NSDecimalNumber(decimal: decimalBolus)
-            newLog.netCarbs = NSDecimalNumber(decimal: decimalNetCarbs)
+        let newLog = Log(context: viewContext)
+        newLog.start = startDate
+        newLog.notes = notes
+        newLog.bg = NSDecimalNumber(decimal: decimalBG)
+        newLog.bolus = NSDecimalNumber(decimal: decimalBolus)
+        newLog.netCarbs = NSDecimalNumber(decimal: decimalNetCarbs)
+        
+        do {
+            try viewContext.save()
             
-            do {
-                try viewContext.save()
-                
-                // Optional: Reset form after add
-                startDate = Date()
-                notes = currentTimeString()
-                bgString = "5.6"
-                bolusString = "0"
-                netCarbsString = "0"
-                
-                coreDataController.getLogs()
-            } catch {
-                print("Save error: \(error)")
-            }
+            // Optional: Reset form after add
+            startDate = Date()
+            notes = currentTimeString()
+            bgString = "5.6"
+            bolusString = "0"
+            netCarbsString = "0"
+            
+            coreDataController.getLogs()
+        } catch {
+            print("Save error: \(error)")
         }
+        
     }
 }
 
