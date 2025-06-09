@@ -28,7 +28,13 @@ struct NewLogView: View {
                 SyncStatusView()
                 
                 Form {
-                    DatePicker("Start", selection: $startDate)
+                    HStack {
+                        DatePicker("Start", selection: $startDate)
+                        Button("Now") {
+                            startDate = Date()
+                        }
+                        .buttonStyle(BorderlessButtonStyle())
+                    }
                     TextField("Notes", text: $notes)
                     TextField("BG (Decimal)", text: $bgString)
                         .modifier(PlatformKeyboardModifier())
