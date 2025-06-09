@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BD2C1CA02DF694FE002FA02E /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2C1C9F2DF694FA002FA02E /* Store.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		BD33E09C2DF55D8400CA7884 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BD2C1C9F2DF694FA002FA02E /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		BD33E0872DF55D8300CA7884 /* Control.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Control.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD33E09B2DF55D8400CA7884 /* ControlTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ControlTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD33E0A52DF55D8400CA7884 /* ControlUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ControlUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -93,6 +98,7 @@
 		BD33E07E2DF55D8300CA7884 = {
 			isa = PBXGroup;
 			children = (
+				BD2C1C9F2DF694FA002FA02E /* Store.swift */,
 				BD33E0B92DF55F9400CA7884 /* Controllers */,
 				BD33E0892DF55D8300CA7884 /* Control */,
 				BD33E09E2DF55D8400CA7884 /* ControlTests */,
@@ -256,6 +262,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BD2C1CA02DF694FE002FA02E /* Store.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

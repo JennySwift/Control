@@ -88,12 +88,42 @@ final class SyncManager: ObservableObject {
 
     
     private func startListening() {
+        let viewContext = container.viewContext
+        
         NotificationCenter.default.publisher(for: .NSPersistentStoreRemoteChange)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.lastSyncDate = Date()
             }
             .store(in: &cancellables)
+        
+        
+        NotificationCenter.default.addObserver(forName: .NSManagedObjectContextObjectsDidChange, object: viewContext, queue: .main) { notification in
+            if let inserts = notification.userInfo?[NSInsertedObjectsKey] as? Set<NSManagedObject>, !inserts.isEmpty {
+                print("Inserted objects: \(inserts)")
+                // Update UI accordingly
+            }
+            
+            if let updates = notification.userInfo?[NSUpdatedObjectsKey] as? Set<NSManagedObject>, !updates.isEmpty {
+                print("Updated objects: \(updates)")
+                // Update UI accordingly
+            }
+            
+            if let deletes = notification.userInfo?[NSDeletedObjectsKey] as? Set<NSManagedObject>, !deletes.isEmpty {
+                print("Deleted objects: \(deletes)")
+                // Update UI accordingly
+            }
+        }
+
+//        NotificationCenter.default.addObserver(
+//            forName: .NSPersistentStoreRemoteChange,
+//            object: container.persistentStoreCoordinator,
+//            queue: .main
+//        ) { notification in
+//            print("Remote change received!")
+//            // Reload your UI or fetch logs again
+//        }
+
     }
 }
 

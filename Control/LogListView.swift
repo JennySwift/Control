@@ -10,7 +10,9 @@ import CoreData
 
 
 struct LogListView: View {
-    var logs: [Log]
+    @EnvironmentObject var coreDataController: CoreDataController
+    
+//    var logs: [Log]
     var isEditingLogs: Bool
 //    @Binding var focusedField: ContentView.LogFieldFocus?
     @FocusState.Binding var focusedField: ContentView.LogFieldFocus?
@@ -21,7 +23,7 @@ struct LogListView: View {
         
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 8) {
-                ForEach(logs, id: \.objectID) { log in
+                ForEach(coreDataController.logs, id: \.objectID) { log in
 
                     
                     LogRowView(

@@ -3,8 +3,9 @@ import CoreData
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
-
-    @State private var logs: [Log] = []
+    @EnvironmentObject var store: Store
+    @EnvironmentObject var coreDataController: CoreDataController
+    
     @State private var fetchLimit = 20
 
     @State private var startDate: Date = Date()
@@ -52,7 +53,6 @@ struct ContentView: View {
                 .padding()
                 
                 LogListView(
-                    logs: logs,
                     isEditingLogs: isEditingLogs,
                     focusedField: $focusedField.projectedValue,
                     onAppearLast: loadMoreIfNeeded
@@ -64,7 +64,7 @@ struct ContentView: View {
         }
         .frame(minWidth: isMac ? 500 : nil, minHeight: isMac ? 600 : nil)
         .onAppear {
-            fetchLogs()
+            coreDataController.getLogs()
 //            TidepoolController().fetchTidepoolBGData(email: "", password: "")
 
         }
@@ -83,19 +83,7 @@ struct ContentView: View {
 
     private func loadMoreIfNeeded() {
         fetchLimit += 20
-        fetchLogs()
-    }
-
-    private func fetchLogs() {
-        let request: NSFetchRequest<Log> = Log.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \Log.start, ascending: false)]
-        request.fetchLimit = fetchLimit
-
-        do {
-            logs = try viewContext.fetch(request)
-        } catch {
-            print("Failed to fetch logs: \(error)")
-        }
+        coreDataController.getLogs()
     }
 
     private var isValidBG: Bool {
@@ -127,7 +115,7 @@ struct ContentView: View {
                 bolusString = "0"
                 netCarbsString = "0"
 
-                fetchLogs()
+                coreDataController.getLogs()
             } catch {
                 print("Save error: \(error)")
             }

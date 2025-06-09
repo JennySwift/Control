@@ -37,7 +37,7 @@ struct SyncStatusView: View {
         }
         .onAppear{
 //            syncManager.printCloudKitEnvironment()
-            syncManager.testCloudKit()
+//            syncManager.testCloudKit()
         }
         .padding(.horizontal)
         .padding(.top, 8)

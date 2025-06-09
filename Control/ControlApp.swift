@@ -15,6 +15,7 @@ struct ControlApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .environmentObject(CoreDataController())
         }
     }
 }
