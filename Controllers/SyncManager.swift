@@ -25,28 +25,75 @@ final class SyncManager: ObservableObject {
     private init() {
         startListening()
     }
-
-
+    
     func triggerSync() {
         guard !isSyncing else { return }
-
         isSyncing = true
 
         let context = container.viewContext
+
+        // Save local changes first
         context.perform {
             do {
                 try context.save()
             } catch {
                 print("Error saving before sync: \(error)")
             }
-        }
 
-        // Simulate delay and update timestamp
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            self.isSyncing = false
-            self.lastSyncDate = Date()
+            // After save, fetch changes from CloudKit
+            self.fetchCloudKitChanges()
         }
     }
+
+    private func fetchCloudKitChanges() {
+//        let container = PersistenceController.shared.container
+//        let coordinator = container.persistentStoreCoordinator
+//
+//        coordinator.perform {
+//            let request = NSPersistentHistoryChangeRequest.fetchHistory(after: nil)
+//
+//            do {
+//                let result = try coordinator.execute(request, with: container.viewContext)
+//                if let historyResult = result as? NSPersistentHistoryResult,
+//                   let transactions = historyResult.result as? [NSPersistentHistoryTransaction],
+//                   !transactions.isEmpty {
+//                    
+//                    print("Fetched \(transactions.count) transactions")
+//
+//                    DispatchQueue.main.async {
+//                        self.getLogs()
+//                        self.lastSyncDate = Date()
+//                    }
+//                }
+//            } catch {
+//                print("Failed to fetch history: \(error)")
+//            }
+//        }
+    }
+
+
+
+
+//    func triggerSync() {
+//        guard !isSyncing else { return }
+//
+//        isSyncing = true
+//
+//        let context = container.viewContext
+//        context.perform {
+//            do {
+//                try context.save()
+//            } catch {
+//                print("Error saving before sync: \(error)")
+//            }
+//        }
+//
+//        // Simulate delay and update timestamp
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+//            self.isSyncing = false
+//            self.lastSyncDate = Date()
+//        }
+//    }
     
     public func testCloudKit () {
         let record = CKRecord(recordType: "Log")

@@ -15,6 +15,7 @@ class CoreDataController: ObservableObject {
     
     init() {
         // ✅ Observe remote changes
+        print("anything happening?")
         NotificationCenter.default.addObserver(
             forName: .NSPersistentStoreRemoteChange,
             object: nil,

@@ -34,15 +34,20 @@ struct PersistenceController {
     init(inMemory: Bool = false) {
         container = NSPersistentCloudKitContainer(name: "Control")
 
-        if inMemory {
-            container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
-        }
-
         guard let description = container.persistentStoreDescriptions.first else {
             fatalError("No store description found")
         }
 
-        // ✅ Enable history tracking and remote notifications
+        if inMemory {
+            description.url = URL(fileURLWithPath: "/dev/null")
+        }
+
+        // ✅ Required for CloudKit syncing
+        description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
+            containerIdentifier: "iCloud.com.jennyswiftcreations.Control"
+        )
+
+        // ✅ Enable history and remote change notifications
         description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
 
@@ -52,7 +57,7 @@ struct PersistenceController {
             }
         }
 
-        // ✅ Automatically merge changes
+        // ✅ Merge remote changes into the viewContext
         container.viewContext.automaticallyMergesChangesFromParent = true
     }
 
