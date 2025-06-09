@@ -24,49 +24,61 @@ struct ContentView: View {
 
 
     @FocusState private var focusedField: LogFieldFocus?
-
-
-
+    
     var body: some View {
-        NavigationStack {
-            VStack {
-                SyncStatusView()
+        TabView {
+            // MARK: - New Log Tab
+            NavigationStack {
+                VStack {
+                    SyncStatusView()
+                    
+                    Form {
+                        DatePicker("Start", selection: $startDate)
+                        TextField("Notes", text: $notes)
+                        TextField("BG (Decimal)", text: $bgString)
+                            .modifier(PlatformKeyboardModifier())
+                        TextField("Bolus", text: $bolusString)
+                            .modifier(PlatformKeyboardModifier())
+                        TextField("Net Carbs", text: $netCarbsString)
+                            .modifier(PlatformKeyboardModifier())
 
-                Toggle("Quick Edit Mode", isOn: $isEditingLogs)
-                    .padding(.horizontal)
-
-                Form {
-                    DatePicker("Start", selection: $startDate)
-                    TextField("Notes", text: $notes)
-                    TextField("BG (Decimal)", text: $bgString)
-                        .modifier(PlatformKeyboardModifier())
-                    TextField("Bolus)", text: $bolusString)
-                        .modifier(PlatformKeyboardModifier())
-                    TextField("Net Carbs", text: $netCarbsString)
-                        .modifier(PlatformKeyboardModifier())
-                    HStack {
-                        Spacer()
-                        Button("Add Log", action: addLog)
-                            .disabled(!isValidBG)
+                        HStack {
+                            Spacer()
+                            Button("Add Log", action: addLog)
+                                .disabled(!isValidBG)
+                        }
                     }
+                    .padding()
                 }
-                .padding()
-                
-                LogListView(
-                    isEditingLogs: isEditingLogs,
-                    focusedField: $focusedField.projectedValue,
-                    onAppearLast: loadMoreIfNeeded
-                )
-
-
+                .navigationTitle("New Log")
             }
-            .navigationTitle("BG Logs")
+            .tabItem {
+                Label("New Log", systemImage: "plus.circle")
+            }
+
+            // MARK: - Logs Tab
+            NavigationStack {
+                VStack {
+                    SyncStatusView()
+
+                    Toggle("Quick Edit Mode", isOn: $isEditingLogs)
+                        .padding(.horizontal)
+
+                    LogListView(
+                        isEditingLogs: isEditingLogs,
+                        focusedField: $focusedField.projectedValue,
+                        onAppearLast: loadMoreIfNeeded
+                    )
+                }
+                .navigationTitle("BG Logs")
+            }
+            .tabItem {
+                Label("Logs", systemImage: "list.bullet")
+            }
         }
         .frame(minWidth: isMac ? 500 : nil, minHeight: isMac ? 600 : nil)
         .onAppear {
             coreDataController.getLogs()
-//            TidepoolController().fetchTidepoolBGData(email: "", password: "")
-
         }
     }
     
