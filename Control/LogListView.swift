@@ -8,41 +8,32 @@
 import SwiftUI
 import CoreData
 
-
 struct LogListView: View {
     @EnvironmentObject var coreDataController: CoreDataController
     
-//    var logs: [Log]
     var isEditingLogs: Bool
-//    @Binding var focusedField: ContentView.LogFieldFocus?
     @FocusState.Binding var focusedField: ContentView.LogFieldFocus?
 
     var onAppearLast: () -> Void
 
     var body: some View {
-        
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 8) {
-                ForEach(coreDataController.logs, id: \.objectID) { log in
-
-                    
-                    LogRowView(
-                        log: log,
-                        isEditingLogs: isEditingLogs,
-                        focusedField: $focusedField.projectedValue
-//                        logs: logs,
-//                        saveContext: saveContext
-                    )
-                    
-                    Divider()
+        List {
+            ForEach(coreDataController.logs, id: \.objectID) { log in
+                LogRowView(
+                    log: log,
+                    isEditingLogs: isEditingLogs,
+                    focusedField: $focusedField.projectedValue
+                )
+                .onAppear {
+                    // Detect when the last item appears to load more
+                    if log == coreDataController.logs.last {
+                        onAppearLast()
+                    }
                 }
-
             }
-            .padding()
+            .onDelete(perform: coreDataController.deleteLogs)
         }
-        
-        
-        
+        .listStyle(.plain) // or .insetGrouped, .grouped, etc. for style tweaks
     }
 }
 

@@ -43,7 +43,7 @@ struct NewLogView: View {
                                     .frame(minWidth: 100, alignment: .leading)
                                     .padding(.vertical, 8)
                                     .padding(.horizontal, 12)
-                                    .background(Color(.systemGray6))
+                                    .background(Color(.systemGray))
                                     .cornerRadius(8)
                             }
 
@@ -95,7 +95,9 @@ struct NewLogView: View {
                             selection: $startDate,
                             displayedComponents: [.date, .hourAndMinute]
                         )
+                        #if(iOS)
                         .datePickerStyle(WheelDatePickerStyle())
+                        #endif
                         .labelsHidden()
                         .frame(maxHeight: .infinity)
 

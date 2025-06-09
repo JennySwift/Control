@@ -46,5 +46,23 @@ class CoreDataController: ObservableObject {
         }
                 
     }
+    
+    //This will only delete one log if it was swiped on, but also handles multi-selection capability
+    public func deleteLogs(at offsets: IndexSet) {
+        for index in offsets {
+            let log = logs[index]
+            context.delete(log)
+        }
+        saveContext()
+        getLogs() // Refresh logs after deletion
+    }
+    
+    private func saveContext() {
+        do {
+            try context.save()
+        } catch {
+            print("Failed to save context: \(error)")
+        }
+    }
 }
 
