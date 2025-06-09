@@ -13,10 +13,11 @@ struct NewLogView: View {
     @EnvironmentObject var coreDataController: CoreDataController
     
     @State private var startDate: Date = Date()
-    @State private var notes: String = currentTimeString() // Initialize with current time
-    @State private var bgString: String = "5.6"
-    @State private var bolusString: String = "0"
-    @State private var netCarbsString: String = "0"
+//    @State private var notes: String = currentTimeString() // Initialize with current time
+    @State private var notes: String = ""
+    @State private var bgString: String = ""
+    @State private var bolusString: String = ""
+    @State private var netCarbsString: String = ""
     
     // State variable to control sheet presentation
     @State private var isShowingDatePicker = false
@@ -206,9 +207,9 @@ struct NewLogView: View {
             // Optional: Reset form after add
             startDate = Date()
             notes = currentTimeString()
-            bgString = "5.6"
-            bolusString = "0"
-            netCarbsString = "0"
+            bgString = ""
+            bolusString = ""
+            netCarbsString = ""
             
             coreDataController.getLogs()
         } catch {
