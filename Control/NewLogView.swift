@@ -18,6 +18,9 @@ struct NewLogView: View {
     @State private var bolusString: String = "0"
     @State private var netCarbsString: String = "0"
     
+    // State variable to control sheet presentation
+    @State private var isShowingDatePicker = false
+    
     private var isValidBG: Bool {
         Decimal(string: bgString) != nil
     }
@@ -27,33 +30,161 @@ struct NewLogView: View {
             VStack {
                 SyncStatusView()
                 
-                Form {
-                    HStack {
-                        DatePicker("Start", selection: $startDate)
-                        Button("Now") {
-                            startDate = Date()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+
+                        // Time Picker Row
+                        HStack {
+                            Button(action: {
+                                isShowingDatePicker = true
+                            }) {
+                                Text(startDate, style: .time)
+                                    .font(.title2)
+                                    .frame(minWidth: 100, alignment: .leading)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(8)
+                            }
+
+                            Spacer()
+
+                            Button("Now") {
+                                startDate = Date()
+                            }
+                            .buttonStyle(BorderlessButtonStyle())
                         }
-                        .buttonStyle(BorderlessButtonStyle())
+
+                        // Notes
+                        TextField("Notes", text: $notes)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+
+                        // BG
+                        TextField("BG (Decimal)", text: $bgString)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .modifier(PlatformKeyboardModifier())
+
+                        // Bolus
+                        TextField("Bolus", text: $bolusString)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .modifier(PlatformKeyboardModifier())
+
+                        // Net Carbs
+                        TextField("Net Carbs", text: $netCarbsString)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .modifier(PlatformKeyboardModifier())
+
+                        // Add Log Button
+                        HStack {
+                            Spacer()
+                            Button("Add Log", action: addLog)
+                                .disabled(!isValidBG)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 20)
+                                .background(isValidBG ? Color.accentColor : Color.gray.opacity(0.4))
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                        }
                     }
-                    TextField("Notes", text: $notes)
-                    TextField("BG (Decimal)", text: $bgString)
-                        .modifier(PlatformKeyboardModifier())
-                    TextField("Bolus", text: $bolusString)
-                        .modifier(PlatformKeyboardModifier())
-                    TextField("Net Carbs", text: $netCarbsString)
-                        .modifier(PlatformKeyboardModifier())
-                    
-                    HStack {
-                        Spacer()
-                        Button("Add Log", action: addLog)
-                            .disabled(!isValidBG)
-                    }
+                    .padding(20)
                 }
-                .padding()
+                .sheet(isPresented: $isShowingDatePicker) {
+                    VStack(spacing: 0) {
+                        DatePicker(
+                            "Select Date & Time",
+                            selection: $startDate,
+                            displayedComponents: [.date, .hourAndMinute]
+                        )
+                        .datePickerStyle(WheelDatePickerStyle())
+                        .labelsHidden()
+                        .frame(maxHeight: .infinity)
+
+                        Divider()
+
+                        Button("Done") {
+                            isShowingDatePicker = false
+                        }
+                        .padding()
+                    }
+                    .padding(0)
+                    .edgesIgnoringSafeArea(.bottom)
+                    .presentationDetents([.medium, .large])
+                }
+
+                
+//                Form {
+//                    VStack(alignment: .leading, spacing: 8) {
+//                        HStack {
+//                            Button(action: {
+//                                isShowingDatePicker = true
+//                            }) {
+//                                Text(startDate, style: .time)
+//                                    .font(.title2)
+//                                    .frame(minWidth: 100)
+//                            }
+//                            Spacer()
+//                            Button("Now") {
+//                                startDate = Date()
+//                            }
+//                            .buttonStyle(BorderlessButtonStyle())
+//                        }
+////                        .padding(.horizontal)
+//                        
+//                        
+//                        
+//                        .sheet(isPresented: $isShowingDatePicker) {
+//                            VStack(spacing: 0) {
+//                                DatePicker(
+//                                    "Select Date & Time",
+//                                    selection: $startDate,
+//                                    displayedComponents: [.date, .hourAndMinute]
+//                                )
+//                                .datePickerStyle(WheelDatePickerStyle())
+//                                .labelsHidden()
+//                                .padding()
+//                                .frame(maxHeight: .infinity)
+//                                Divider()
+//                                Button("Done") {
+//                                    isShowingDatePicker = false
+//                                }
+//                                .padding()
+//                            }
+//                            .padding(0)
+//                            .edgesIgnoringSafeArea(.bottom)
+//                            .presentationDetents([.medium, .large]) // Requires iOS 16 / macOS 13+
+//                        }
+//                    }
+//                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+//                    
+//                    
+//                    
+//                    TextField("Notes", text: $notes)
+//                    TextField("BG (Decimal)", text: $bgString)
+//                        .modifier(PlatformKeyboardModifier())
+//                    TextField("Bolus", text: $bolusString)
+//                        .modifier(PlatformKeyboardModifier())
+//                    TextField("Net Carbs", text: $netCarbsString)
+//                        .modifier(PlatformKeyboardModifier())
+//                    
+//                    HStack {
+//                        Spacer()
+//                        Button("Add Log", action: addLog)
+//                            .disabled(!isValidBG)
+//                    }
+//                }
+//                .padding(0)
             }
             .navigationTitle("New Log")
         }
     }
+    
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+
     
     private func addLog() {
         guard let decimalBG = Decimal(string: bgString),
