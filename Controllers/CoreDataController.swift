@@ -14,38 +14,34 @@ class CoreDataController: ObservableObject {
     @Published var logs: [Log] = []
     
     init() {
-        // ✅ Observe remote changes
-        print("anything happening?")
+        getLogs()
+
         NotificationCenter.default.addObserver(
-            forName: .NSPersistentStoreRemoteChange,
+            forName: .remoteChangeHandled,
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            print("📡 Remote change received!")
+            print("🔄 CoreDataController detected remote sync. Refetching logs.")
             self?.getLogs()
         }
     }
 
     public func getLogs() {
-        var sortDescriptors = [
-            NSSortDescriptor(key: "start", ascending: false)
-        ]
-        
         let request: NSFetchRequest<Log> = Log.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(keyPath: \Log.start, ascending: false)]
-        request.sortDescriptors = sortDescriptors
         request.fetchLimit = 20
 
         do {
+            context.refreshAllObjects() // 🧹 Clears Core Data's cache
             let fetchedLogs = try context.fetch(request)
-            print("logs fetched: \(logs.count)")
+            print("✅ logs fetched from Core Data: \(fetchedLogs.count) logs")
+
             DispatchQueue.main.async {
                 self.logs = fetchedLogs
             }
         } catch {
-            print("Failed to fetch logs: \(error)")
+            print("❌ Failed to fetch logs: \(error)")
         }
-                
     }
     
     //This will only delete one log if it was swiped on, but also handles multi-selection capability

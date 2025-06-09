@@ -7,6 +7,11 @@
 
 import CoreData
 
+extension Notification.Name {
+    static let remoteChangeHandled = Notification.Name("RemoteChangeHandled")
+}
+
+
 struct PersistenceController {
     static let shared = PersistenceController()
 
@@ -42,12 +47,12 @@ struct PersistenceController {
             description.url = URL(fileURLWithPath: "/dev/null")
         }
 
-        // ✅ Required for CloudKit syncing
+        // ✅ CloudKit syncing setup
         description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
             containerIdentifier: "iCloud.com.jennyswiftcreations.Control"
         )
 
-        // ✅ Enable history and remote change notifications
+        // ✅ Enable history tracking and remote change notifications
         description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
 
@@ -55,11 +60,55 @@ struct PersistenceController {
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
+
+            // ✅ Register for remote change notifications right after store is loaded
+            NotificationCenter.default.addObserver(
+                forName: .NSPersistentStoreRemoteChange,
+                object: nil,
+                queue: .main
+            ) { _ in
+                print("📡 Remote change received!")
+                NotificationCenter.default.post(name: .remoteChangeHandled, object: nil)
+            }
+
+            
+            
         }
 
         // ✅ Merge remote changes into the viewContext
         container.viewContext.automaticallyMergesChangesFromParent = true
     }
+
+    
+//    init(inMemory: Bool = false) {
+//        container = NSPersistentCloudKitContainer(name: "Control")
+//
+//        guard let description = container.persistentStoreDescriptions.first else {
+//            fatalError("No store description found")
+//        }
+//
+//        if inMemory {
+//            description.url = URL(fileURLWithPath: "/dev/null")
+//        }
+//
+//        // ✅ Required for CloudKit syncing
+//        description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
+//            containerIdentifier: "iCloud.com.jennyswiftcreations.Control"
+//        )
+//
+//        // ✅ Enable history and remote change notifications
+//        description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+//        description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+//
+//        container.loadPersistentStores { storeDescription, error in
+//            if let error = error as NSError? {
+//                fatalError("Unresolved error \(error), \(error.userInfo)")
+//            }
+//        }
+//
+//        // ✅ Merge remote changes into the viewContext
+//        container.viewContext.automaticallyMergesChangesFromParent = true
+//    }
 
 
 //    init(inMemory: Bool = false) {
