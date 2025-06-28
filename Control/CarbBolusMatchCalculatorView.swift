@@ -1,21 +1,29 @@
+//
+//  CarbBolusMatchCalculatorView.swift
+//  Control
+//
+//  Created by Jenny Swift on 28/6/2025.
+//
+
 import SwiftUI
 
 struct BolusEntry: Identifiable {
     let id = UUID()
     var value: String
-    var lastEdited: Date = Date()
+    var lastEdited: Date
 }
 
 struct CarbEntry: Identifiable {
     let id = UUID()
     var value: String
-    var lastEdited: Date = Date()
+    var lastEdited: Date
 }
 
 struct CarbBolusMatchCalculatorView: View {
-    @State private var bolusEntries: [BolusEntry] = [BolusEntry(value: "")]
-    @State private var carbEntries: [CarbEntry] = [CarbEntry(value: "")]
+    @State private var bolusEntries: [BolusEntry] = [BolusEntry(value: "", lastEdited: Date())]
+    @State private var carbEntries: [CarbEntry] = [CarbEntry(value: "", lastEdited: Date())]
     @State private var insulinToCarbRatio: String = "30"
+    @State private var currentTime = Date() // Triggers relative time updates
 
     enum FocusField: Hashable {
         case bolus(UUID)
@@ -25,8 +33,8 @@ struct CarbBolusMatchCalculatorView: View {
 
     @FocusState private var focusedField: FocusField?
 
-    // Timer to trigger view updates every 60 seconds
-    @State private var timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+    // Timer for updating relative time labels
+    private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
     private var totalBolusDecimal: Decimal {
         bolusEntries.compactMap { Decimal(string: $0.value) }.reduce(0, +)
@@ -67,6 +75,19 @@ struct CarbBolusMatchCalculatorView: View {
         }
     }
 
+    private var actualICRString: String? {
+        guard totalBolusDecimal > 0, totalCarbsDecimal > 0 else { return nil }
+        let ratio = totalCarbsDecimal / totalBolusDecimal
+        let formatted = (ratio as NSDecimalNumber).doubleValue
+        return String(format: "1U per %.1fg", formatted)
+    }
+
+    private func relativeTime(from date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .short
+        return formatter.localizedString(for: date, relativeTo: currentTime)
+    }
+
     var body: some View {
         ZStack {
             Color.clear
@@ -97,7 +118,7 @@ struct CarbBolusMatchCalculatorView: View {
 
                         HStack {
                             Button("➕ Add Bolus") {
-                                let new = BolusEntry(value: "")
+                                let new = BolusEntry(value: "", lastEdited: Date())
                                 bolusEntries.append(new)
                                 focusedField = .bolus(new.id)
                             }
@@ -134,7 +155,7 @@ struct CarbBolusMatchCalculatorView: View {
 
                         HStack {
                             Button("➕ Add Carb") {
-                                let new = CarbEntry(value: "")
+                                let new = CarbEntry(value: "", lastEdited: Date())
                                 carbEntries.append(new)
                                 focusedField = .carb(new.id)
                             }
@@ -167,6 +188,9 @@ struct CarbBolusMatchCalculatorView: View {
                         if let coverage = carbCoverage {
                             Text("Covers ~\(coverage.description)g carbs")
                         }
+                        if let usedICR = actualICRString {
+                            Text("🧮 Used ICR: \(usedICR)")
+                        }
                         Text(resultMessage)
                             .font(.headline)
                             .foregroundColor(.blue)
@@ -176,8 +200,8 @@ struct CarbBolusMatchCalculatorView: View {
                     Divider()
 
                     Button("Clear All", role: .destructive) {
-                        bolusEntries = [BolusEntry(value: "")]
-                        carbEntries = [CarbEntry(value: "")]
+                        bolusEntries = [BolusEntry(value: "", lastEdited: Date())]
+                        carbEntries = [CarbEntry(value: "", lastEdited: Date())]
                         insulinToCarbRatio = "30"
                         focusedField = nil
                     }
@@ -186,20 +210,8 @@ struct CarbBolusMatchCalculatorView: View {
             }
         }
         .navigationTitle("Carb Matching")
-        .onReceive(timer) { _ in } // This silently triggers view refresh
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Done") {
-                    focusedField = nil
-                }
-            }
+        .onReceive(timer) { _ in
+            currentTime = Date()
         }
-    }
-
-    func relativeTime(from date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .short
-        return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
