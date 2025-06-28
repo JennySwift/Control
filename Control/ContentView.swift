@@ -17,6 +17,11 @@ struct ContentView: View {
                     Label("Correction", systemImage: "syringe")
                 }
             
+            CarbBolusMatchCalculatorView()
+                .tabItem {
+                    Label("Carb Match", systemImage: "scalemass")
+                }
+            
             NewLogView()
                 .tabItem {
                     Label("New Log", systemImage: "plus.circle")
