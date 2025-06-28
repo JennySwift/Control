@@ -54,6 +54,18 @@ class DexcomClient: ObservableObject {
         sessionId = String(data: data, encoding: .utf8)?.replacingOccurrences(of: "\"", with: "")
     }
     
+    private func trendArrow(for rate: Double) -> String {
+        switch rate {
+        case ..<(-0.10): return "⬇︎⬇︎"
+        case -0.10..<(-0.05): return "↓"
+        case -0.05..<(-0.025): return "↘︎"
+        case -0.025...0.025: return "→"
+        case 0.025..<0.05: return "↗︎"
+        case 0.05..<0.10: return "↑"
+        default: return "⬆︎⬆︎"
+        }
+    }
+    
     private func parseDexcomDate(_ string: String) -> Date? {
         let pattern = #"Date\((\d+)\)"#
         if let match = string.range(of: pattern, options: .regularExpression) {
@@ -104,7 +116,8 @@ class DexcomClient: ObservableObject {
             let formattedRate = String(format: "%+.2f mmol/L/min", rateMMOLPerMin)
 
             DispatchQueue.main.async {
-                self.bgReading = "\(formattedBG) (\(formattedRate))"
+                let arrow = self.trendArrow(for: rateMMOLPerMin)
+                self.bgReading = "\(formattedBG) \(arrow) (\(formattedRate))"
             }
         }
         
