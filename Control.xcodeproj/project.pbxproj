@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		BD2C1CA02DF694FE002FA02E /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2C1C9F2DF694FA002FA02E /* Store.swift */; };
 		BD2C1CA92DF6A3DB002FA02E /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2C1CA82DF6A3D9002FA02E /* Global.swift */; };
+		BD36735B2E1024E600A5D466 /* DexcomClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD36735A2E1024E200A5D466 /* DexcomClient.swift */; };
+		BD36735F2E1029A700A5D466 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = BD36735E2E10298D00A5D466 /* Secrets.xcconfig */; };
+		BD3673612E10312700A5D466 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = BD3673602E10311A00A5D466 /* .gitignore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +37,9 @@
 		BD33E0872DF55D8300CA7884 /* Control.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Control.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD33E09B2DF55D8400CA7884 /* ControlTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ControlTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD33E0A52DF55D8400CA7884 /* ControlUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ControlUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BD36735A2E1024E200A5D466 /* DexcomClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DexcomClient.swift; sourceTree = "<group>"; };
+		BD36735E2E10298D00A5D466 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		BD3673602E10311A00A5D466 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -100,6 +106,9 @@
 		BD33E07E2DF55D8300CA7884 = {
 			isa = PBXGroup;
 			children = (
+				BD3673602E10311A00A5D466 /* .gitignore */,
+				BD36735E2E10298D00A5D466 /* Secrets.xcconfig */,
+				BD36735A2E1024E200A5D466 /* DexcomClient.swift */,
 				BD2C1CA82DF6A3D9002FA02E /* Global.swift */,
 				BD2C1C9F2DF694FA002FA02E /* Store.swift */,
 				BD33E0B92DF55F9400CA7884 /* Controllers */,
@@ -241,6 +250,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BD36735F2E1029A700A5D466 /* Secrets.xcconfig in Resources */,
+				BD3673612E10312700A5D466 /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -266,6 +277,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BD2C1CA92DF6A3DB002FA02E /* Global.swift in Sources */,
+				BD36735B2E1024E600A5D466 /* DexcomClient.swift in Sources */,
 				BD2C1CA02DF694FE002FA02E /* Store.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -382,6 +394,7 @@
 		};
 		BD33E0B12DF55D8400CA7884 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BD36735E2E10298D00A5D466 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -444,6 +457,7 @@
 		};
 		BD33E0B22DF55D8400CA7884 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BD36735E2E10298D00A5D466 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;

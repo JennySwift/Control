@@ -12,6 +12,11 @@ struct ContentView: View {
     var body: some View {
         TabView {
             
+            DexcomView()
+                .tabItem {
+                    Label("Dexcom", systemImage: "drop.fill")
+                }
+            
             CarbBolusMatchCalculatorView()
                 .tabItem {
                     Label("Carb Match", systemImage: "scalemass")
