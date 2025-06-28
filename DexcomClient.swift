@@ -16,12 +16,6 @@ class DexcomClient: ObservableObject {
     init() {
         print("USERNAME: \(username)")
         print("PASSWORD: \(password)")
-        
-        let username = ProcessInfo.processInfo.environment["DEXCOM_USERNAME"] ?? "MISSING_USERNAME"
-        let password = ProcessInfo.processInfo.environment["DEXCOM_PASSWORD"] ?? "MISSING_PASSWORD"
-
-        print("USERNAME:", username)
-        print("PASSWORD:", password)
     }
     
     private let applicationId = "d89443d2-327c-4a6f-89e5-496bbb0317db"
@@ -59,10 +53,23 @@ class DexcomClient: ObservableObject {
         let (data, _) = try await URLSession.shared.data(for: request)
         sessionId = String(data: data, encoding: .utf8)?.replacingOccurrences(of: "\"", with: "")
     }
+    
+    private func parseDexcomDate(_ string: String) -> Date? {
+        let pattern = #"Date\((\d+)\)"#
+        if let match = string.range(of: pattern, options: .regularExpression) {
+            let timestampString = String(string[match])
+                .replacingOccurrences(of: "Date(", with: "")
+                .replacingOccurrences(of: ")", with: "")
+            if let millis = Double(timestampString) {
+                return Date(timeIntervalSince1970: millis / 1000)
+            }
+        }
+        return nil
+    }
 
     private func fetchLatestBG() async throws {
         guard let sessionId = sessionId else { return }
-        let url = URL(string: "\(baseURL)/Publisher/ReadPublisherLatestGlucoseValues?sessionId=\(sessionId)&minutes=1440&maxCount=1")!
+        let url = URL(string: "\(baseURL)/Publisher/ReadPublisherLatestGlucoseValues?sessionId=\(sessionId)&minutes=30&maxCount=2")!
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -71,11 +78,35 @@ class DexcomClient: ObservableObject {
 
         let (data, _) = try await URLSession.shared.data(for: request)
         if let readings = try JSONSerialization.jsonObject(with: data) as? [[String: Any]],
-           let value = readings.first?["Value"] as? Int {
+           readings.count >= 2,
+           let value1 = readings[0]["Value"] as? Int,
+           let value2 = readings[1]["Value"] as? Int,
+           let time1String = readings[0]["WT"] as? String,
+           let time2String = readings[1]["WT"] as? String {
+
+            let formatter = ISO8601DateFormatter()
+            print("Raw WT values:", time1String, time2String)
+            guard let time1 = parseDexcomDate(time1String),
+                  let time2 = parseDexcomDate(time2String) else {
+                DispatchQueue.main.async {
+                    self.bgReading = "Error: Time parse"
+                }
+                return
+            }
+
+            let deltaMGDL = Double(value1 - value2)
+            let deltaTimeMin = time1.timeIntervalSince(time2) / 60.0
+            let rateMGDLPerMin = deltaMGDL / deltaTimeMin
+            let rateMMOLPerMin = rateMGDLPerMin / 18.0
+
+            let valueMMOL = Double(value1) / 18.0
+            let formattedBG = String(format: "%.1f mmol/L", valueMMOL)
+            let formattedRate = String(format: "%+.2f mmol/L/min", rateMMOLPerMin)
+
             DispatchQueue.main.async {
-                let mmol = Double(value) / 18.0
-                self.bgReading = String(format: "%.1f mmol/L", mmol)
+                self.bgReading = "\(formattedBG) (\(formattedRate))"
             }
         }
+        
     }
 }
