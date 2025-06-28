@@ -8,7 +8,10 @@
 import Foundation
 
 class DexcomClient: ObservableObject {
-    @Published var bgReading: String = "Loading..."
+    @Published var bgValue: String = "Loading..."
+    @Published var trendArrow: String = ""
+    @Published var rateOfChange: String = ""
+    
     
     let username = Bundle.main.object(forInfoDictionaryKey: "DEXCOM_USERNAME") as? String ?? "MISSING_USERNAME"
     let password = Bundle.main.object(forInfoDictionaryKey: "DEXCOM_PASSWORD") as? String ?? "MISSING_PASSWORD"
@@ -30,7 +33,7 @@ class DexcomClient: ObservableObject {
                 try await fetchLatestBG()
             } catch {
                 DispatchQueue.main.async {
-                    self.bgReading = "Error: \(error.localizedDescription)"
+                    self.bgValue = "Error: \(error.localizedDescription)"
                 }
             }
         }
@@ -101,7 +104,7 @@ class DexcomClient: ObservableObject {
             guard let time1 = parseDexcomDate(time1String),
                   let time2 = parseDexcomDate(time2String) else {
                 DispatchQueue.main.async {
-                    self.bgReading = "Error: Time parse"
+                    self.bgValue = "Error: Time parse"
                 }
                 return
             }
@@ -114,11 +117,13 @@ class DexcomClient: ObservableObject {
             let valueMMOL = Double(value1) / 18.0
             let formattedBG = String(format: "%.1f mmol/L", valueMMOL)
             let formattedRate = String(format: "%+.2f mmol/L/min", rateMMOLPerMin)
-
+            
             DispatchQueue.main.async {
-                let arrow = self.trendArrow(for: rateMMOLPerMin)
-                self.bgReading = "\(formattedBG) \(arrow) (\(formattedRate))"
+                self.bgValue = formattedBG
+                self.trendArrow = self.trendArrow(for: rateMMOLPerMin)
+                self.rateOfChange = formattedRate
             }
+
         }
         
     }
