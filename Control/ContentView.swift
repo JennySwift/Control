@@ -11,6 +11,12 @@ struct ContentView: View {
     
     var body: some View {
         TabView {
+            
+            CorrectionBolusCalculatorView()
+                .tabItem {
+                    Label("Correction", systemImage: "syringe")
+                }
+            
             NewLogView()
                 .tabItem {
                     Label("New Log", systemImage: "plus.circle")
