@@ -30,9 +30,9 @@ struct CorrectionBolusCalculatorView: View {
     private var correctionFactorDecimal: Decimal? {
         Decimal(string: correctionFactor)
     }
-
-    private var iobDecimal: Decimal? {
-        Decimal(string: iob)
+    
+    private var iobDecimal: Decimal {
+        Decimal(string: iob) ?? 0
     }
 
     private var correctionDoseDecimal: Decimal? {
@@ -40,13 +40,12 @@ struct CorrectionBolusCalculatorView: View {
             let current = currentBgDecimal,
             let target = targetBgDecimal,
             let cf = correctionFactorDecimal,
-            let insulinOnBoard = iobDecimal,
             cf != 0
         else {
             return nil
         }
 
-        let rawDose = (current - target) / cf - insulinOnBoard
+        let rawDose = (current - target) / cf - iobDecimal
         return max(rawDose, 0)
     }
 
