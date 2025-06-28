@@ -1,20 +1,15 @@
-//
-//  CarbBolusMatchCalculatorView.swift
-//  Control
-//
-//  Created by Jenny Swift on 28/6/2025.
-//
-
 import SwiftUI
 
 struct BolusEntry: Identifiable {
     let id = UUID()
     var value: String
+    var lastEdited: Date = Date()
 }
 
 struct CarbEntry: Identifiable {
     let id = UUID()
     var value: String
+    var lastEdited: Date = Date()
 }
 
 struct CarbBolusMatchCalculatorView: View {
@@ -29,6 +24,9 @@ struct CarbBolusMatchCalculatorView: View {
     }
 
     @FocusState private var focusedField: FocusField?
+
+    // Timer to trigger view updates every 60 seconds
+    @State private var timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
     private var totalBolusDecimal: Decimal {
         bolusEntries.compactMap { Decimal(string: $0.value) }.reduce(0, +)
@@ -71,11 +69,9 @@ struct CarbBolusMatchCalculatorView: View {
 
     var body: some View {
         ZStack {
-            // Tap background to dismiss keyboard
-            Color.white.opacity(0.0001)
-                .contentShape(Rectangle())
+            Color.clear
                 .onTapGesture {
-                    dismissKeyboard()
+                    focusedField = nil
                 }
 
             ScrollView {
@@ -83,10 +79,20 @@ struct CarbBolusMatchCalculatorView: View {
                     Group {
                         Text("💉 Bolus Entries").font(.headline)
                         ForEach($bolusEntries) { $entry in
-                            TextField("Bolus", text: $entry.value)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .keyboardType(.decimalPad)
-                                .focused($focusedField, equals: .bolus(entry.id))
+                            VStack(alignment: .leading) {
+                                TextField("Bolus", text: $entry.value)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .keyboardType(.decimalPad)
+                                    .focused($focusedField, equals: .bolus(entry.id))
+                                    .onChange(of: entry.value) { _ in
+                                        if let index = bolusEntries.firstIndex(where: { $0.id == entry.id }) {
+                                            bolusEntries[index].lastEdited = Date()
+                                        }
+                                    }
+                                Text("Edited \(relativeTime(from: entry.lastEdited)) ago")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
                         }
 
                         HStack {
@@ -110,10 +116,20 @@ struct CarbBolusMatchCalculatorView: View {
                     Group {
                         Text("🍇 Carb Entries").font(.headline)
                         ForEach($carbEntries) { $entry in
-                            TextField("Carbs", text: $entry.value)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .keyboardType(.decimalPad)
-                                .focused($focusedField, equals: .carb(entry.id))
+                            VStack(alignment: .leading) {
+                                TextField("Carbs", text: $entry.value)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .keyboardType(.decimalPad)
+                                    .focused($focusedField, equals: .carb(entry.id))
+                                    .onChange(of: entry.value) { _ in
+                                        if let index = carbEntries.firstIndex(where: { $0.id == entry.id }) {
+                                            carbEntries[index].lastEdited = Date()
+                                        }
+                                    }
+                                Text("Edited \(relativeTime(from: entry.lastEdited)) ago")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
                         }
 
                         HStack {
@@ -163,33 +179,27 @@ struct CarbBolusMatchCalculatorView: View {
                         bolusEntries = [BolusEntry(value: "")]
                         carbEntries = [CarbEntry(value: "")]
                         insulinToCarbRatio = "30"
-                        dismissKeyboard()
+                        focusedField = nil
                     }
                 }
                 .padding()
-                .onTapGesture {
-                    dismissKeyboard()
-                }
             }
-            .gesture(
-                DragGesture().onChanged { _ in
-                    dismissKeyboard()
-                }
-            )
         }
         .navigationTitle("Carb Matching")
+        .onReceive(timer) { _ in } // This silently triggers view refresh
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button("Done") {
-                    dismissKeyboard()
+                    focusedField = nil
                 }
             }
         }
     }
 
-    private func dismissKeyboard() {
-        focusedField = nil
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    func relativeTime(from date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .short
+        return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
