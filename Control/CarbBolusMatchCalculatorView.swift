@@ -89,129 +89,132 @@ struct CarbBolusMatchCalculatorView: View {
     }
 
     var body: some View {
-        ZStack {
-            Color.clear
-                .onTapGesture {
-                    focusedField = nil
-                }
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    Group {
-                        Text("💉 Bolus Entries").font(.headline)
-                        ForEach($bolusEntries) { $entry in
-                            VStack(alignment: .leading) {
-                                TextField("Bolus", text: $entry.value)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .keyboardType(.decimalPad)
-                                    .focused($focusedField, equals: .bolus(entry.id))
-                                    .onChange(of: entry.value) { _ in
-                                        if let index = bolusEntries.firstIndex(where: { $0.id == entry.id }) {
-                                            bolusEntries[index].lastEdited = Date()
-                                        }
-                                    }
-                                Text("Edited \(relativeTime(from: entry.lastEdited)) ago")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                            }
-                        }
-
-                        HStack {
-                            Button("➕ Add Bolus") {
-                                let new = BolusEntry(value: "", lastEdited: Date())
-                                bolusEntries.append(new)
-                                focusedField = .bolus(new.id)
-                            }
-
-                            if bolusEntries.count > 1 {
-                                Spacer()
-                                Button("➖ Remove Bolus", role: .destructive) {
-                                    bolusEntries.removeLast()
-                                }
-                            }
-                        }
-                    }
-
-                    Divider()
-
-                    Group {
-                        Text("🍇 Carb Entries").font(.headline)
-                        ForEach($carbEntries) { $entry in
-                            VStack(alignment: .leading) {
-                                TextField("Carbs", text: $entry.value)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .keyboardType(.decimalPad)
-                                    .focused($focusedField, equals: .carb(entry.id))
-                                    .onChange(of: entry.value) { _ in
-                                        if let index = carbEntries.firstIndex(where: { $0.id == entry.id }) {
-                                            carbEntries[index].lastEdited = Date()
-                                        }
-                                    }
-                                Text("Edited \(relativeTime(from: entry.lastEdited)) ago")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                            }
-                        }
-
-                        HStack {
-                            Button("➕ Add Carb") {
-                                let new = CarbEntry(value: "", lastEdited: Date())
-                                carbEntries.append(new)
-                                focusedField = .carb(new.id)
-                            }
-
-                            if carbEntries.count > 1 {
-                                Spacer()
-                                Button("➖ Remove Carb", role: .destructive) {
-                                    carbEntries.removeLast()
-                                }
-                            }
-                        }
-                    }
-
-                    Divider()
-
-                    Group {
-                        Text("⚙️ Insulin:Carb Ratio").font(.headline)
-                        TextField("e.g. 30", text: $insulinToCarbRatio)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.decimalPad)
-                            .focused($focusedField, equals: .icr)
-                    }
-
-                    Divider()
-
-                    Group {
-                        Text("📊 Results").font(.headline)
-                        Text("Total Bolus: \(totalBolusDecimal.description) U")
-                        Text("Total Carbs: \(totalCarbsDecimal.description) g")
-                        if let coverage = carbCoverage {
-                            Text("Covers ~\(coverage.description)g carbs")
-                        }
-                        if let usedICR = actualICRString {
-                            Text("🧮 Used ICR: \(usedICR)")
-                        }
-                        Text(resultMessage)
-                            .font(.headline)
-                            .foregroundColor(.blue)
-                            .padding(.top, 4)
-                    }
-
-                    Divider()
-
-                    Button("Clear All", role: .destructive) {
-                        bolusEntries = [BolusEntry(value: "", lastEdited: Date())]
-                        carbEntries = [CarbEntry(value: "", lastEdited: Date())]
-                        insulinToCarbRatio = "30"
+        NavigationStack {
+            ZStack {
+                Color.clear
+                    .onTapGesture {
                         focusedField = nil
                     }
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Group {
+                            Text("💉 Bolus Entries").font(.headline)
+                            ForEach($bolusEntries) { $entry in
+                                VStack(alignment: .leading) {
+                                    TextField("Bolus", text: $entry.value)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        .keyboardType(.decimalPad)
+                                        .focused($focusedField, equals: .bolus(entry.id))
+                                        .onChange(of: entry.value) { _ in
+                                            if let index = bolusEntries.firstIndex(where: { $0.id == entry.id }) {
+                                                bolusEntries[index].lastEdited = Date()
+                                            }
+                                        }
+                                    Text("Edited \(relativeTime(from: entry.lastEdited)) ago")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            
+                            HStack {
+                                Button("➕ Add Bolus") {
+                                    let new = BolusEntry(value: "", lastEdited: Date())
+                                    bolusEntries.append(new)
+                                    focusedField = .bolus(new.id)
+                                }
+                                
+                                if bolusEntries.count > 1 {
+                                    Spacer()
+                                    Button("➖ Remove Bolus", role: .destructive) {
+                                        bolusEntries.removeLast()
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Divider()
+                        
+                        Group {
+                            Text("🍇 Carb Entries").font(.headline)
+                            ForEach($carbEntries) { $entry in
+                                VStack(alignment: .leading) {
+                                    TextField("Carbs", text: $entry.value)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        .keyboardType(.decimalPad)
+                                        .focused($focusedField, equals: .carb(entry.id))
+                                        .onChange(of: entry.value) { _ in
+                                            if let index = carbEntries.firstIndex(where: { $0.id == entry.id }) {
+                                                carbEntries[index].lastEdited = Date()
+                                            }
+                                        }
+                                    Text("Edited \(relativeTime(from: entry.lastEdited)) ago")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            
+                            HStack {
+                                Button("➕ Add Carb") {
+                                    let new = CarbEntry(value: "", lastEdited: Date())
+                                    carbEntries.append(new)
+                                    focusedField = .carb(new.id)
+                                }
+                                
+                                if carbEntries.count > 1 {
+                                    Spacer()
+                                    Button("➖ Remove Carb", role: .destructive) {
+                                        carbEntries.removeLast()
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Divider()
+                        
+                        Group {
+                            Text("⚙️ Insulin:Carb Ratio").font(.headline)
+                            TextField("e.g. 30", text: $insulinToCarbRatio)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .keyboardType(.decimalPad)
+                                .focused($focusedField, equals: .icr)
+                        }
+                        
+                        Divider()
+                        
+                        Group {
+                            Text("📊 Results").font(.headline)
+                            Text("Total Bolus: \(totalBolusDecimal.description) U")
+                            Text("Total Carbs: \(totalCarbsDecimal.description) g")
+                            if let coverage = carbCoverage {
+                                Text("Covers ~\(coverage.description)g carbs")
+                            }
+                            if let usedICR = actualICRString {
+                                Text("🧮 Used ICR: \(usedICR)")
+                            }
+                            Text(resultMessage)
+                                .font(.headline)
+                                .foregroundColor(.blue)
+                                .padding(.top, 4)
+                        }
+                        
+                        Divider()
+                        
+                        Button("Clear All", role: .destructive) {
+                            bolusEntries = [BolusEntry(value: "", lastEdited: Date())]
+                            carbEntries = [CarbEntry(value: "", lastEdited: Date())]
+                            insulinToCarbRatio = "30"
+                            focusedField = nil
+                        }
+                    }
+                    .padding()
                 }
-                .padding()
             }
-        }
-        .navigationTitle("Carb Matching")
-        .onReceive(timer) { _ in
-            currentTime = Date()
+            .navigationTitle("Carb Matching")
+            .onReceive(timer) { _ in
+                currentTime = Date()
+            }
+            .floatingDoneButton(focusedField: $focusedField)
         }
     }
 }

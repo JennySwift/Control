@@ -13,7 +13,7 @@ struct CorrectionBolusCalculatorView: View {
     @State private var correctionFactor: String = "3.5"
     @State private var iob: String = "0"
 
-    @State private var activeField: Field?
+    @FocusState private var focusedField: Field?
 
     enum Field {
         case currentBg, targetBg, correctionFactor, iob
@@ -67,21 +67,27 @@ struct CorrectionBolusCalculatorView: View {
     }
 
     var body: some View {
-        Form {
-            Section(header: Text("Correction Calculator")) {
-                calculatorTextField(label: "Current BG", value: $currentBg, field: .currentBg)
-                calculatorTextField(label: "Target BG", value: $targetBg, field: .targetBg)
-                calculatorTextField(label: "Correction Factor", value: $correctionFactor, field: .correctionFactor)
-                calculatorTextField(label: "Insulin on Board (IOB)", value: $iob, field: .iob)
-            }
-
-            Section(header: Text("Suggested Correction")) {
-                Text("\(formattedCorrectionDose) units")
-                    .font(.title2)
-                    .foregroundColor(.blue)
+        NavigationStack {
+            ZStack {
+                Color.clear.onTapGesture { focusedField = nil }
+                Form {
+                    Section(header: Text("Correction Calculator")) {
+                        calculatorTextField(label: "Current BG", value: $currentBg, field: .currentBg)
+                        calculatorTextField(label: "Target BG", value: $targetBg, field: .targetBg)
+                        calculatorTextField(label: "Correction Factor", value: $correctionFactor, field: .correctionFactor)
+                        calculatorTextField(label: "Insulin on Board (IOB)", value: $iob, field: .iob)
+                    }
+                    
+                    Section(header: Text("Suggested Correction")) {
+                        Text("\(formattedCorrectionDose) units")
+                            .font(.title2)
+                            .foregroundColor(.blue)
+                    }
+                }
+                .navigationTitle("Correction Dose")
+                .floatingDoneButton(focusedField: $focusedField)
             }
         }
-        .navigationTitle("Correction Dose")
     }
 
     @ViewBuilder
@@ -92,12 +98,7 @@ struct CorrectionBolusCalculatorView: View {
             TextField("", text: value)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
-                .onTapGesture {
-                    if activeField != field {
-                        value.wrappedValue = ""
-                        activeField = field
-                    }
-                }
+                .focused($focusedField, equals: field)
         }
     }
 }

@@ -12,6 +12,7 @@
 		BD36735B2E1024E600A5D466 /* DexcomClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD36735A2E1024E200A5D466 /* DexcomClient.swift */; };
 		BD36735F2E1029A700A5D466 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = BD36735E2E10298D00A5D466 /* Secrets.xcconfig */; };
 		BD3673612E10312700A5D466 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = BD3673602E10311A00A5D466 /* .gitignore */; };
+		BD3673672E10ED6B00A5D466 /* FloatingDoneButtonModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3673662E10ED5F00A5D466 /* FloatingDoneButtonModifier.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +41,7 @@
 		BD36735A2E1024E200A5D466 /* DexcomClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DexcomClient.swift; sourceTree = "<group>"; };
 		BD36735E2E10298D00A5D466 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		BD3673602E10311A00A5D466 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		BD3673662E10ED5F00A5D466 /* FloatingDoneButtonModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingDoneButtonModifier.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -106,6 +108,7 @@
 		BD33E07E2DF55D8300CA7884 = {
 			isa = PBXGroup;
 			children = (
+				BD3673662E10ED5F00A5D466 /* FloatingDoneButtonModifier.swift */,
 				BD3673602E10311A00A5D466 /* .gitignore */,
 				BD36735E2E10298D00A5D466 /* Secrets.xcconfig */,
 				BD36735A2E1024E200A5D466 /* DexcomClient.swift */,
@@ -279,6 +282,7 @@
 				BD2C1CA92DF6A3DB002FA02E /* Global.swift in Sources */,
 				BD36735B2E1024E600A5D466 /* DexcomClient.swift in Sources */,
 				BD2C1CA02DF694FE002FA02E /* Store.swift in Sources */,
+				BD3673672E10ED6B00A5D466 /* FloatingDoneButtonModifier.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
