@@ -11,6 +11,7 @@ class DexcomClient: ObservableObject {
     @Published var bgValue: String = "Loading..."
     @Published var trendArrow: String = ""
     @Published var rateOfChange: String = ""
+    @Published var latestTimestamp: Date?
     
     
     let username = Bundle.main.object(forInfoDictionaryKey: "DEXCOM_USERNAME") as? String ?? "MISSING_USERNAME"
@@ -122,8 +123,8 @@ class DexcomClient: ObservableObject {
                 self.bgValue = formattedBG
                 self.trendArrow = self.trendArrow(for: rateMMOLPerMin)
                 self.rateOfChange = formattedRate
+                self.latestTimestamp = time1
             }
-
         }
         
     }

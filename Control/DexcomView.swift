@@ -2,6 +2,17 @@ import SwiftUI
 
 struct DexcomView: View {
     @StateObject private var dexcomClient = DexcomClient()
+    @State private var now = Date()
+    
+    private var timeAgoText: String {
+        guard let timestamp = dexcomClient.latestTimestamp else { return "—" }
+
+        let minutesAgo = Int(now.timeIntervalSince(timestamp) / 60)
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+
+        return "\(minutesAgo) min ago (\(formatter.string(from: timestamp)))"
+    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -19,6 +30,12 @@ struct DexcomView: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
+            
+            if dexcomClient.latestTimestamp != nil {
+                Text(timeAgoText)
+                    .font(.footnote)
+                    .foregroundColor(.gray)
+            }
 
             Button("Refresh") {
                 dexcomClient.loginAndFetch()
@@ -28,6 +45,19 @@ struct DexcomView: View {
         .padding()
         .onAppear {
             dexcomClient.loginAndFetch()
+            startTimer()
         }
+    }
+    
+    private func startTimer() {
+        Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
+            now = Date()
+        }
+    }
+    
+    private func relativeDateString(from date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
+        return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
