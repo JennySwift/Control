@@ -22,6 +22,10 @@ struct DexcomView: View {
             Text(dexcomClient.bgValue)
                 .font(.system(size: 40, weight: .bold))
                 .foregroundColor(.primary)
+            
+            Text("Previous: \(dexcomClient.previousBgValue)")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
 
             HStack(spacing: 10) {
                 Text(dexcomClient.trendArrow)

@@ -12,6 +12,7 @@ class DexcomClient: ObservableObject {
     @Published var trendArrow: String = ""
     @Published var rateOfChange: String = ""
     @Published var latestTimestamp: Date?
+    @Published var previousBgValue: String = ""
     
     
     let username = Bundle.main.object(forInfoDictionaryKey: "DEXCOM_USERNAME") as? String ?? "MISSING_USERNAME"
@@ -118,12 +119,15 @@ class DexcomClient: ObservableObject {
             let valueMMOL = Double(value1) / 18.0
             let formattedBG = String(format: "%.1f mmol/L", valueMMOL)
             let formattedRate = String(format: "%+.2f mmol/L/min", rateMMOLPerMin)
+            let previousMMOL = Double(value2) / 18.0
+            let formattedPrevious = String(format: "%.1f mmol/L", previousMMOL)
             
             DispatchQueue.main.async {
                 self.bgValue = formattedBG
                 self.trendArrow = self.trendArrow(for: rateMMOLPerMin)
                 self.rateOfChange = formattedRate
                 self.latestTimestamp = time1
+                self.previousBgValue = formattedPrevious
             }
         }
         
