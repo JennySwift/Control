@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct CorrectionBolusCalculatorView: View {
+    @EnvironmentObject var dexcomClient: DexcomClient
     @State private var currentBg: String = ""
     @State private var targetBg: String = "4.0"
     @State private var correctionFactor: String = "3.5"
     @State private var iob: String = "0"
+    
 
     @FocusState private var focusedField: Field?
 
@@ -86,6 +88,12 @@ struct CorrectionBolusCalculatorView: View {
                 }
                 .navigationTitle("Correction Dose")
                 .floatingDoneButton(focusedField: $focusedField)
+            }
+        }
+        .onChange(of: dexcomClient.bgValue) { newValue in
+            if currentBg.isEmpty,
+               let value = Double(newValue.components(separatedBy: " ").first ?? "") {
+                currentBg = String(format: "%.1f", value)
             }
         }
     }

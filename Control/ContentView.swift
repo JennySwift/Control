@@ -4,6 +4,7 @@ import CoreData
 struct ContentView: View {
     @EnvironmentObject var coreDataController: CoreDataController
     @FocusState private var focusedField: LogFieldFocus?
+    @StateObject private var dexcomClient = DexcomClient()
     
     enum LogFieldFocus: Hashable {
         case start(NSManagedObjectID), bg(NSManagedObjectID), notes(NSManagedObjectID)
@@ -13,18 +14,20 @@ struct ContentView: View {
         TabView {
             
             DexcomView()
+                .environmentObject(dexcomClient)
                 .tabItem {
                     Label("Dexcom", systemImage: "drop.fill")
+                }
+
+            CorrectionBolusCalculatorView()
+                .environmentObject(dexcomClient)
+                .tabItem {
+                    Label("Correction", systemImage: "syringe")
                 }
             
             CarbBolusMatchCalculatorView()
                 .tabItem {
                     Label("Carb Match", systemImage: "scalemass")
-                }
-            
-            CorrectionBolusCalculatorView()
-                .tabItem {
-                    Label("Correction", systemImage: "syringe")
                 }
             
             NewLogView()

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct DexcomView: View {
-    @StateObject private var dexcomClient = DexcomClient()
+    @EnvironmentObject var dexcomClient: DexcomClient
     @State private var now = Date()
     @State private var lastFetchTime: Date?
     private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
