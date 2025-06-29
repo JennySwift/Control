@@ -91,8 +91,7 @@ struct CorrectionBolusCalculatorView: View {
             }
         }
         .onChange(of: dexcomClient.bgValue) { newValue in
-            if currentBg.isEmpty,
-               let value = Double(newValue.components(separatedBy: " ").first ?? "") {
+            if let value = Double(newValue.components(separatedBy: " ").first ?? "") {
                 currentBg = String(format: "%.1f", value)
             }
         }
