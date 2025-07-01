@@ -13,6 +13,8 @@ class DexcomClient: ObservableObject {
     @Published var rateOfChange: String = ""
     @Published var latestTimestamp: Date?
     @Published var previousBgValue: String = ""
+    @Published var recentReadings: [GlucoseReading] = []
+
     
     
     let username = Bundle.main.object(forInfoDictionaryKey: "DEXCOM_USERNAME") as? String ?? "MISSING_USERNAME"
@@ -40,6 +42,20 @@ class DexcomClient: ObservableObject {
             }
         }
     }
+    
+    //For the BG graph, because Apple Health BG data is 3 hours delayed.
+    func fetchRecentReadings() {
+        print("Started Dexcom fetchRecentReadings()")
+        Task {
+            do {
+                try await login()
+                try await fetchRecentBGReadings()
+            } catch {
+                print("Dexcom fetch error: \(error.localizedDescription)")
+            }
+        }
+    }
+
 
     private func login() async throws {
         let url = URL(string: "\(baseURL)/General/LoginPublisherAccountByName")!
@@ -57,6 +73,7 @@ class DexcomClient: ObservableObject {
 
         let (data, _) = try await URLSession.shared.data(for: request)
         sessionId = String(data: data, encoding: .utf8)?.replacingOccurrences(of: "\"", with: "")
+        print("✅ Logged in! Session ID: \(sessionId ?? "nil")")
     }
     
     private func trendArrow(for rate: Double) -> String {
@@ -132,4 +149,32 @@ class DexcomClient: ObservableObject {
         }
         
     }
+    
+    private func fetchRecentBGReadings() async throws {
+        guard let sessionId = sessionId else {
+                print("❌ No sessionId — login failed?")
+                return
+            }
+        let url = URL(string: "\(baseURL)/Publisher/ReadPublisherLatestGlucoseValues?sessionId=\(sessionId)&minutes=180&maxCount=100")!
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(applicationId, forHTTPHeaderField: "applicationId")
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        if let readings = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+            print("✅ Received \(readings.count) Dexcom readings")
+            let mapped = readings.compactMap { dict -> GlucoseReading? in
+                guard let value = dict["Value"] as? Int,
+                      let timeStr = dict["WT"] as? String,
+                      let date = parseDexcomDate(timeStr) else { return nil }
+                return GlucoseReading(value: Double(value) / 18.0, timestamp: date)
+            }
+            DispatchQueue.main.async {
+                self.recentReadings = mapped.sorted(by: { $0.timestamp < $1.timestamp })
+            }
+        }
+    }
+
 }
