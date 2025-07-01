@@ -106,6 +106,11 @@ struct CorrectionBolusCalculatorView: View {
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
                 .focused($focusedField, equals: field)
+                .onChange(of: focusedField) { newFocus in
+                    if newFocus == field {
+                        value.wrappedValue = ""
+                    }
+                }
         }
     }
 }
