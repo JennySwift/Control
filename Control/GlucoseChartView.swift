@@ -75,6 +75,16 @@ struct GlucoseChartView: View {
                             .foregroundStyle(Color.blue)
                             .lineStyle(StrokeStyle(lineWidth: 1, dash: [4]))
                     }
+                    // Bold red line at 4.0
+                    RuleMark(y: .value("Low Target", targetLow))
+                        .foregroundStyle(.red)
+                        .lineStyle(StrokeStyle(lineWidth: 2))
+
+                    // Bold yellow line at 10.0
+                    RuleMark(y: .value("High Target", targetHigh))
+                        .foregroundStyle(.yellow)
+                        .lineStyle(StrokeStyle(lineWidth: 2))
+
                 }
                 .chartOverlay { proxy in
                     GeometryReader { geometry in
@@ -92,7 +102,7 @@ struct GlucoseChartView: View {
                             )
                     }
                 }
-                .chartYScale(domain: .automatic(includesZero: false))
+                .chartYScale(domain: 4.0...(zoomedReadings.map(\.value).max() ?? 15))
                 .frame(height: 300)
                 .padding(.bottom, 4)
 
