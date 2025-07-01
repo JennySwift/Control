@@ -13,6 +13,11 @@ struct ContentView: View {
     var body: some View {
         TabView {
             
+            GlucoseChartView()
+                .tabItem {
+                    Label("Dexcom", systemImage: "drop.fill")
+                }
+            
             DexcomView()
                 .environmentObject(dexcomClient)
                 .tabItem {
@@ -48,5 +53,6 @@ struct ContentView: View {
         }
     }
 }
+
 
 

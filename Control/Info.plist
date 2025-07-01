@@ -6,6 +6,12 @@
 	<string>$(DEXCOM_USERNAME)</string>
 	<key>DEXCOM_PASSWORD</key>
 	<string>$(DEXCOM_PASSWORD)</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>“This app uses HealthKit to access your blood glucose.”
+
+“This app uses HealthKit to access your blood glucose.”
+
+This app uses HealthKit to access your blood glucose.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
