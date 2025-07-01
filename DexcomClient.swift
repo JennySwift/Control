@@ -151,11 +151,8 @@ class DexcomClient: ObservableObject {
     }
     
     private func fetchRecentBGReadings() async throws {
-        guard let sessionId = sessionId else {
-                print("❌ No sessionId — login failed?")
-                return
-            }
-        let url = URL(string: "\(baseURL)/Publisher/ReadPublisherLatestGlucoseValues?sessionId=\(sessionId)&minutes=180&maxCount=100")!
+        guard let sessionId = sessionId else { return }
+        let url = URL(string: "\(baseURL)/Publisher/ReadPublisherLatestGlucoseValues?sessionId=\(sessionId)&minutes=180&maxCount=36")!
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -164,17 +161,60 @@ class DexcomClient: ObservableObject {
 
         let (data, _) = try await URLSession.shared.data(for: request)
         if let readings = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
-            print("✅ Received \(readings.count) Dexcom readings")
             let mapped = readings.compactMap { dict -> GlucoseReading? in
                 guard let value = dict["Value"] as? Int,
                       let timeStr = dict["WT"] as? String,
                       let date = parseDexcomDate(timeStr) else { return nil }
                 return GlucoseReading(value: Double(value) / 18.0, timestamp: date)
             }
+
+            // Sort in DESCENDING order by timestamp (newest → oldest), then reverse to oldest → newest
+            let sorted = mapped.sorted(by: { $0.timestamp > $1.timestamp }).reversed()
+
+            if let first = sorted.first, let last = sorted.last {
+                let formatter = DateFormatter()
+                formatter.dateStyle = .short
+                formatter.timeStyle = .medium
+                formatter.timeZone = TimeZone(identifier: "Australia/Sydney")
+                print("📅 Dexcom BG range: \(formatter.string(from: first.timestamp)) → \(formatter.string(from: last.timestamp))")
+            }
+
             DispatchQueue.main.async {
-                self.recentReadings = mapped.sorted(by: { $0.timestamp < $1.timestamp })
+                self.recentReadings = Array(sorted)
             }
         }
     }
+
+
+    //This worked for fetching readings but it didn't include readings from the most recent hour. Actually maybe that's because I'd just inserted a new sensor.
+//    private func fetchRecentBGReadings() async throws {
+//        guard let sessionId = sessionId else {
+//                print("❌ No sessionId — login failed?")
+//                return
+//            }
+//        let url = URL(string: "\(baseURL)/Publisher/ReadPublisherLatestGlucoseValues?sessionId=\(sessionId)&minutes=180&maxCount=100")!
+//
+//        var request = URLRequest(url: url)
+//        request.httpMethod = "POST"
+//        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+//        request.setValue(applicationId, forHTTPHeaderField: "applicationId")
+//
+//        let (data, _) = try await URLSession.shared.data(for: request)
+//        if let readings = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+//            print("✅ Received \(readings.count) Dexcom readings")
+//            let mapped = readings.compactMap { dict -> GlucoseReading? in
+//                guard let value = dict["Value"] as? Int,
+//                      let timeStr = dict["WT"] as? String,
+//                      let date = parseDexcomDate(timeStr) else { return nil }
+//                return GlucoseReading(value: Double(value) / 18.0, timestamp: date)
+//            }
+//            DispatchQueue.main.async {
+//                self.recentReadings = mapped.sorted(by: { $0.timestamp < $1.timestamp })
+//                if let first = self.recentReadings.first, let last = self.recentReadings.last {
+//                        print("📅 Dexcom BG range: \(first.timestamp) → \(last.timestamp)")
+//                    }
+//            }
+//        }
+//    }
 
 }
