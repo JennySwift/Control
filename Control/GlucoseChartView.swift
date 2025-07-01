@@ -30,10 +30,33 @@ struct GlucoseChartView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            if let selected = selectedReading {
-                Text("BG: \(String(format: "%.1f", selected.value)) at \(selected.timestamp.formatted(date: .omitted, time: .shortened))")
-                    .font(.headline)
-            }
+            Text(
+                selectedReading != nil
+                ? "BG: \(String(format: "%.1f", selectedReading!.value)) at \(selectedReading!.timestamp.formatted(date: .omitted, time: .shortened))"
+                : " "
+            )
+            .font(.system(size: 24, weight: .bold, design: .rounded))
+            .frame(width: 320)
+            .multilineTextAlignment(.center)
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(
+                        selectedReading?.value ?? 6 < targetLow ? Color.red.opacity(0.8) :
+                        selectedReading?.value ?? 6 > targetHigh ? Color.yellow.opacity(0.8) :
+                        Color.green.opacity(0.8)
+                    )
+            )
+            .foregroundColor(
+                selectedReading?.value ?? 6 > targetHigh ? .black : .white
+            )
+            .opacity(selectedReading == nil ? 0 : 1)
+            .scaleEffect(selectedReading == nil ? 1.0 : 1.05)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selectedReading)
+
+
+
+
 
             if readings.isEmpty {
                 ProgressView("Loading glucose data...")
