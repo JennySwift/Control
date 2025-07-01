@@ -130,7 +130,6 @@ struct GlucoseChartView: View {
                 .padding(.bottom, 4)
 
                 HStack(spacing: 12) {
-                    Text("Zoom:")
                     ForEach([1, 3, 6, 12, 24], id: \.self) { hours in
                         Button("\(hours)h") {
                             zoomHours = hours
@@ -138,18 +137,30 @@ struct GlucoseChartView: View {
                         .buttonStyle(.bordered)
                         .tint(zoomHours == hours ? .blue : .gray)
                     }
-
-                    Spacer()
-
-                    Button("◀️") {
-                        viewOffset += zoomHours
-                    }
-
-                    Button("▶️") {
-                        viewOffset = max(0, viewOffset - zoomHours)
-                    }
                 }
                 .font(.subheadline)
+                
+                HStack(spacing: 20) {
+                    Button(action: {
+                        viewOffset += zoomHours
+                    }) {
+                        Label("Earlier", systemImage: "arrow.left.circle.fill")
+                            .labelStyle(.iconOnly)
+                            .font(.system(size: 36))
+                            .foregroundColor(.blue)
+                    }
+                    
+                    Button(action: {
+                        viewOffset = max(0, viewOffset - zoomHours)
+                    }) {
+                        Label("Later", systemImage: "arrow.right.circle.fill")
+                            .labelStyle(.iconOnly)
+                            .font(.system(size: 36))
+                            .foregroundColor(.blue)
+                    }
+                }
+                .padding(.top, 8)
+
             }
         }
         .padding()
