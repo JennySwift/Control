@@ -15,7 +15,7 @@ struct ContentView: View {
             
             GlucoseChartView()
                 .tabItem {
-                    Label("Dexcom", systemImage: "drop.fill")
+                    Label("BG", systemImage: "chart.xyaxis.line")
                 }
             
             DexcomView()
