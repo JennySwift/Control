@@ -27,9 +27,52 @@ struct GlucoseChartView: View {
         let startDate = Calendar.current.date(byAdding: .hour, value: -zoomHours, to: endDate) ?? endDate
         return readings.filter { $0.timestamp >= startDate && $0.timestamp <= endDate }
     }
+    
+    //For displaying what date is being shown
+    private var viewLabel: String {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let offsetDate = calendar.startOfDay(for: Calendar.current.date(byAdding: .hour, value: -viewOffset, to: Date()) ?? Date())
+        
+        let daysAgo = calendar.dateComponents([.day], from: offsetDate, to: today).day ?? 0
+
+        switch daysAgo {
+        case 0:
+            return "Today"
+        case 1:
+            return "Yesterday"
+        default:
+            return "\(daysAgo) days ago"
+        }
+    }
+    
+    private var chartStartDate: Date {
+        Calendar.current.date(byAdding: .hour, value: -zoomHours - viewOffset, to: Date()) ?? Date()
+    }
+
+    private var chartEndDate: Date {
+        Calendar.current.date(byAdding: .hour, value: -viewOffset, to: Date()) ?? Date()
+    }
+    
+    private var formattedChartDateRange: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMM, h:mm a"
+        let start = formatter.string(from: chartStartDate)
+        let end = formatter.string(from: chartEndDate)
+        return "\(start) → \(end)"
+    }
+
+
+
 
     var body: some View {
         VStack(spacing: 8) {
+            Text(viewLabel)
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 4)
+
+            
             Text(
                 selectedReading != nil
                 ? "BG: \(String(format: "%.1f", selectedReading!.value)) at \(selectedReading!.timestamp.formatted(date: .omitted, time: .shortened))"
@@ -79,6 +122,12 @@ struct GlucoseChartView: View {
                         self.readings = merged
                     }
             } else {
+                Text(formattedChartDateRange)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .padding(.bottom, 4)
+
+                
                 Chart(zoomedReadings) { reading in
                     LineMark(
                         x: .value("Time", reading.timestamp),
