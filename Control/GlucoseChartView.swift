@@ -15,7 +15,7 @@ struct GlucoseChartView: View {
     @StateObject private var dexcomClient = DexcomClient()
     @State private var readings: [GlucoseReading] = []
     @State private var selectedReading: GlucoseReading? = nil
-    @State private var zoomHours: Int = 3
+    @State private var zoomHours: Int = 24
     @State private var viewOffset: Int = 0
     @State private var targetLow: Double = 4.0
     @State private var targetHigh: Double = 10.0
